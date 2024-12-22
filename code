@@ -1,0 +1,283 @@
+#define _CRT_SECURE_NO_DEPRECATE
+#include <stdio.h>
+#include <locale.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <ctype.h>
+#include <time.h>
+struct klaviatura {
+    char pr[15]; // производитель
+    int tk; // тип клавиш
+    char ip[5]; // интерфейс подключения
+    float kk; // количество клавиш
+    char co[15]; // цвет
+};
+typedef struct klaviatura kv_t;
+
+int fill_array(kv_t* massiv, int size);
+int print_array(kv_t* massiv, int size);
+int input_file(char* fname, kv_t* massiv, int size);
+int output_file(char* fname, kv_t* massiv, int size);
+int find_element(kv_t* massiv, int size);
+int sort_massiv(kv_t* massiv, int size);
+int add_elem(kv_t* massiv, int size);
+int edit_elem(kv_t* massiv, int size);
+int main() {
+    setlocale(LC_ALL, "RUS");
+    kv_t* massiv = NULL;
+    kv_t* massiv2 = NULL; //массив для вывода из файлa
+    int size1 = 0, size2 = 0, vibor = 123, vibor1 = 0;
+    char fname1[20] = "", fname2[20] = "";
+    printf("Для получения доступа в меню для работы с массивом требуется получить массив:\n1)Создать новый массив\n2)Считать массив из файла\n");
+    scanf("%i", &vibor1);
+    switch (vibor1)
+    {
+    case 1:
+        printf("Введите размер массива\n");
+        scanf("%i", &size1);
+        massiv = (kv_t*)malloc(size1 * sizeof(kv_t));
+        fill_array(massiv, size1);
+        print_array(massiv, size1);
+        break;
+    case 2:
+        printf("Введите размер массива который необходимо вывести\n");
+        scanf("%i", &size2);
+        printf("Введите название файла из которого нужно вывести информацию\n");
+        scanf("%s", &fname2);
+        massiv2 = (kv_t*)malloc(size2 * sizeof(kv_t));
+        output_file(fname2, massiv2, size2);
+        massiv = massiv2;
+        size1 = size2;
+        print_array(massiv, size1);
+        break;
+    default:
+        break;
+    }
+    while (vibor != 0) {
+        printf("Меню:\n1)Создание новой записи\n2)Поиск записи\n3)Запись в файл\n4)Чтение из файла\n5)Печать отсортированной записи\n6)Изменение отдельной записи\n7)Добавление произвольного числа записей\n8)Вывести текущий массив\n0)Выход\n");
+        scanf("%i", &vibor);
+        switch (vibor)
+        {
+        case 1:
+            printf("Введите размер массива\n");
+            scanf("%i", &size1);
+            massiv = (kv_t*)malloc(size1 * sizeof(kv_t));
+            fill_array(massiv, size1);
+            print_array(massiv, size1);
+            break;
+        case 2:
+            find_element(massiv, size1);
+            break;
+        case 3:
+            printf("Введите название файла\n");
+            scanf("%s", &fname1);
+            input_file(fname1, massiv, size1);
+            print_array(massiv, size1);
+            break;
+        case 4:
+            printf("Введите размер массива который необходимо вывести\n");
+            scanf("%i", &size2);
+            printf("Введите название файла из которого нужно вывести информацию\n");
+            scanf("%s", &fname2);
+            massiv2 = (kv_t*)malloc(size2 * sizeof(kv_t));
+            output_file(fname2, massiv2, size2);
+            massiv = massiv2;
+            size1 = size2;
+            print_array(massiv, size1);
+            break;
+        case 5:
+            sort_massiv(massiv, size1);
+            break;
+        case 6:
+            edit_elem(massiv, size1);
+            break;
+        case 7:
+            size1 = add_elem(massiv, size1);
+            break;
+        case 8:
+            print_array(massiv, size1);
+
+        default:
+            break;
+        }
+    }
+}
+fill_array(kv_t* massiv, int size) {
+    int p1;
+    printf("Варианты для заполнения полей\n1) Производитель - любое название\n2)Тип клавиш - 1)membran/2)mechanic\n3)Интерфейс подключения - usb/PS/2/COM\n4)Количество клавиш - целое число\n5)Цвет - любой цвет на английском языке\n");
+
+    for (int i = 0; i < size; i++) {
+        int valid_input = 0;
+
+        while (!valid_input) {
+            printf("Введите данные о клавиатуре в порядке: производитель, тип клавиш, интерфейс подключения, количество клавиш, цвет\n");
+            int result = scanf("%15s %i %9s %f %15s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
+
+            if (result == 5 && (massiv[i].tk == 1 || massiv[i].tk == 2)) {
+                valid_input = 1;
+                printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+            }
+            else {
+                printf("Некорректные данные. Пожалуйста, попробуйте еще раз.\n");
+                while (getchar() != '\n');
+            }
+        }
+    }
+    return size;
+}
+print_array(kv_t* massiv, int size) {
+    for (int i = 0; i < size; i++) {
+        printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+    }
+    return size;
+}
+input_file(char* fname, kv_t* massiv, int size) {
+    FILE* out = fopen(fname, "wt");
+    if (!out) {
+        printf("Ошибка открытия файла\n");
+        return 1;
+    }
+    for (int i = 0; i < size; i++) {
+        fprintf(out, "Производитель: %s Тип клавиш: %i Интерфейс подключения: %s Количество клавиш: %f Цвет: %s\n",
+            massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+    }
+    fclose(out);
+    return size;
+}
+
+output_file(char* fname, kv_t* massiv, int size) {
+    FILE* in = fopen(fname, "rt");
+    if (!in) {
+        printf("Ошибка открытия файла\n");
+        return 1;
+    }
+    int count = 0;
+    while (fscanf(in, "Производитель: %s Тип клавиш: %i Интерфейс подключения: %s Количество клавиш: %f Цвет: %s\n",
+        &massiv[count].pr, &massiv[count].tk, &massiv[count].ip, &massiv[count].kk, &massiv[count].co) == 5) {
+        count++;
+        if (count >= size) break;
+    }
+    fclose(in);
+    return count;
+}
+find_element(kv_t* massiv, int size) {
+    char s[15], s1[15]; // Для введения данных
+    int p, k; // p для выбора поля, k для количества искомых полей
+
+    printf("Введите количество полей для поиска\n");
+    scanf("%i", &k);
+    if (k == 1) {
+        printf("Введите поле для поиска (1-цвет, 2-производитель)\n");
+        scanf("%i", &p);
+
+        if (p == 1) {
+            printf("Введите цвет\n");
+            scanf("%s", s);
+            printf("Выбран цвет %s\n", s);
+
+            for (int i = 0; i < size; i++) {
+                if (strcmp(massiv[i].co, s) == 0)
+                    printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n",
+                        massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+            }
+        }
+        else if (p == 2) {
+            printf("Введите производителя\n");
+            scanf("%s", s);
+
+            for (int i = 0; i < size; i++) {
+                if (strcmp(massiv[i].pr, s) == 0)
+                    printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n",
+                        massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+            }
+        }
+    }
+    else if (k == 2) {
+        printf("Выбран поиск по обоим полям\n");
+        printf("Введите искомый цвет\n");
+        scanf("%s", &s);
+        printf("Введите искомого производителя\n");
+        scanf("%s", &s1);
+        for (int i = 0; i < size; i++) {
+            if ((strcmp(massiv[i].co, s) == 0) && (strcmp(massiv[i].pr, s1) == 0)) printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+        }
+    }
+    return size;
+}
+sort_massiv(kv_t* massiv, int size) {
+    int p, p1;
+    printf("Введите критерий для сортировки (1-производитель, 2-тип клавиш, 3-интерфейс подключения, 4-количество клавиш, 5-цвет)\n");
+    scanf("%i", &p);
+    printf("Выберите тип сортировки (1-по возрастанию, 2-по убыванию)\n");
+    scanf("%i", &p1);
+
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            int sort = 0;
+
+            switch (p) {
+            case 1: sort = strcmp(massiv[j].pr, massiv[j + 1].pr); break;
+            case 2: sort = (massiv[j].tk > massiv[j + 1].tk) ? 1 : -1; break;
+            case 3: sort = strcmp(massiv[j].ip, massiv[j + 1].ip); break;
+            case 4: sort = (massiv[j].kk > massiv[j + 1].kk) ? 1 : -1; break;
+            case 5: sort = strcmp(massiv[j].co, massiv[j + 1].co); break;
+            }
+
+            if ((p1 == 1 && sort > 0) || (p1 == 2 && sort < 0)) {
+                kv_t temp = massiv[j];
+                massiv[j] = massiv[j + 1];
+                massiv[j + 1] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < size; i++) {
+        printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n",
+            massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+    }
+    return size;
+}
+add_elem(kv_t* massiv, int size) {
+    int p, p1 = 0;
+    kv_t* massiv32;
+    printf("Введите количество элементов, которое хотите добавить:\n");
+    scanf("%i", &p);
+    if (massiv == NULL) {
+        printf("Oshibka");
+        return 0;
+    }
+    massiv32 = massiv;
+    massiv32 = realloc(massiv, (size + p) * sizeof(kv_t));
+    printf("Варианты для заполнения полей\n1) Производитель - любое название\n2)Тип клавиш - 1)membran/2)mechanic\n3)Интерфейс подключения - usb/PS/2/COM\n4)Количество клавиш - целое число\n5)Цвет - любой цвет на английском языке\n");
+    for (int i = size; i < size + p; i++) {
+        printf("Введите данные о клавиатуре на английском языке в порядке: производитель, тип клавиш, интерфейс подключения, количество клавиш, цвет\n");
+        scanf("%15s %i %9s %f %15s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
+        printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+        printf("Если данные введены некорректно введите 1 и попробуйте еще раз, иначе введите 0\n");
+        scanf("%i", &p1);
+        if (p1 == 1) i--;
+    }
+    massiv = massiv32;
+    return (size + p);
+}
+edit_elem(kv_t* massiv, int size) {
+    int p, p1;
+    printf("Введите индекс элемента, который нужно отредактировать\n");
+    scanf("%i", &p);
+    printf("Введите какой парамерт нужно отредактировать(1-производитель, 2-тип клавиш, 3-тип подключение, 4-количества клавиш, 5-цвет)\n");
+    scanf("%i", &p1);
+    printf("Введите значение которое нужно вставить в этот параметр\n");
+    switch (p1)
+    {
+    case 1: scanf("%s", &massiv[p].pr); break;
+    case 2: scanf("%i", &massiv[p].tk); break;
+    case 3: scanf("%s", &massiv[p].ip); break;
+    case 4: scanf("%f", &massiv[p].kk); break;
+    case 5: scanf("%s", &massiv[p].co); break;
+    default:
+        printf("Введен неверный тип данных\n");
+        break;
+    }
+    return size;
+}
