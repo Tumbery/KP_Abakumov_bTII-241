@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+
 struct klaviatura {
     char pr[15]; // производитель
     int tk; // тип клавиш
@@ -14,7 +15,8 @@ struct klaviatura {
     char co[15]; // цвет
 };
 typedef struct klaviatura kv_t;
-// прототипы функция
+
+// прототипы функций
 int fill_array(kv_t* massiv, int size);
 int print_array(kv_t* massiv, int size);
 int input_file(char* fname, kv_t* massiv, int size);
@@ -23,35 +25,40 @@ int find_element(kv_t* massiv, int size);
 int sort_massiv(kv_t* massiv, int size);
 int add_elem(kv_t* massiv, int size);
 int edit_elem(kv_t* massiv, int size);
+int get_valid_input(int min, int max);
+int file_have(const char* filename);
 
-//основная программа с интерфейсом
+// основная программа с интерфейсом
 int main() {
     setlocale(LC_ALL, "RUS");
-    kv_t* massiv = NULL; //исходный массив
-    kv_t* massiv2 = NULL; //массив для вывода из файлa
-    int size1 = 0, size2 = 0; //размер 1 и 2 массива соответсвенно
-    int vibor = 123, vibor1 = 0; //переменные для выбора вариантов
-    char fname1[20] = "", fname2[20] = "";//для названия файлов
+    kv_t* massiv = NULL; // исходный массив
+    kv_t* massiv2 = NULL; // массив для вывода из файла
+    int size1 = 0, size2 = 0; // размер 1 и 2 массива соответственно
+    int vibor = 123, vibor1 = 0; // переменные для выбора вариантов
+    char fname1[20] = "", fname2[20] = ""; // для названия файлов
 
-    //получение исходного массива для работы
+    // получение исходного массива для работы
     printf("Для получения доступа в меню для работы с массивом требуется получить массив:\n1)Создать новый массив\n2)Считать массив из файла\n");
-    scanf("%i", &vibor1);
-    switch (vibor1)
-    {
+    vibor1 = get_valid_input(1, 2);
+    switch (vibor1) {
     case 1:
         printf("Введите размер массива\n");
-        scanf("%i", &size1);
+        size1 = get_valid_input(1, 100); // ограничим размер массива до 100
         massiv = (kv_t*)malloc(size1 * sizeof(kv_t));
         fill_array(massiv, size1);
         print_array(massiv, size1);
         break;
     case 2:
         printf("Введите размер массива который необходимо вывести\n");
-        scanf("%i", &size2);
+        size2 = get_valid_input(1, 100); // ограничим размер массива до 100
         printf("Введите название файла из которого нужно вывести информацию\n");
-        scanf("%s", &fname2);
+        scanf("%s", fname2);
+        if (!file_have(fname2)) {
+            printf("Файл с таким именем не существует. Пожалуйста, введите корректное имя файла.\n");
+            break;
+        }
         massiv2 = (kv_t*)malloc(size2 * sizeof(kv_t));
-        output_file(fname2, massiv2, size2);
+        size2 = output_file(fname2, massiv2, size2);
         massiv = massiv2;
         size1 = size2;
         print_array(massiv, size1);
@@ -60,77 +67,86 @@ int main() {
         break;
     }
 
-    //основной цикл программы
+    // основной цикл программы
     while (vibor != 0) {
         printf("Меню:\n1)Создание новой записи\n2)Поиск записи\n3)Запись в файл\n4)Чтение из файла\n5)Печать отсортированной записи\n6)Изменение отдельной записи\n7)Добавление произвольного числа записей\n8)Вывести текущий массив\n0)Выход\n");
-        scanf("%i", &vibor);
-        switch (vibor)
-        {
+        vibor = get_valid_input(0, 8);
+        switch (vibor) {
         case 1:
-            //создание новой записи    
+            // создание новой записи
             printf("Введите размер массива\n");
-            scanf("%i", &size1);
+            size1 = get_valid_input(1, 100); // ограничим размер массива до 100
             massiv = (kv_t*)malloc(size1 * sizeof(kv_t));
             fill_array(massiv, size1);
             print_array(massiv, size1);
             break;
         case 2:
-            //поиск элемента
+            // поиск элемента
             find_element(massiv, size1);
             break;
         case 3:
-            //запись в файл
+            // запись в файл
             printf("Введите название файла\n");
-            scanf("%s", &fname1);
+            scanf("%s", fname1);
             input_file(fname1, massiv, size1);
             print_array(massiv, size1);
             break;
         case 4:
-            //чтение из файла
+            // чтение из файла
             printf("Введите размер массива который необходимо вывести\n");
-            scanf("%i", &size2);
+            size2 = get_valid_input(1, 100); // ограничим размер массива до 100
             printf("Введите название файла из которого нужно вывести информацию\n");
-            scanf("%s", &fname2);
+            scanf("%s", fname2);
+            if (!file_have(fname2)) {
+                printf("Файл с таким именем не существует. Пожалуйста, введите корректное имя файла.\n");
+                break;
+            }
             massiv2 = (kv_t*)malloc(size2 * sizeof(kv_t));
-            output_file(fname2, massiv2, size2);
+            size2 = output_file(fname2, massiv2, size2);
             massiv = massiv2;
             size1 = size2;
             print_array(massiv, size1);
             break;
         case 5:
-            //сортировка массива
+            // сортировка массива
             sort_massiv(massiv, size1);
             break;
         case 6:
-            //изменение записи
+            // изменение записи
             edit_elem(massiv, size1);
             break;
         case 7:
-            //добавление произвольного количества элементов
+            // добавление произвольного количества элементов
             size1 = add_elem(massiv, size1);
             break;
         case 8:
-            //вывод массива
+            // вывод массива
             print_array(massiv, size1);
-
+            break;
         default:
             break;
         }
     }
+
+    // освобождение памяти
+    free(massiv);
+    free(massiv2);
+
+    return 0;
 }
 
-//определение собственных функций
-//заполнение массива
-fill_array(kv_t* massiv, int size) {
-    int p1;//выбор
+// определение собственных функций
+// заполнение массива
+int fill_array(kv_t* massiv, int size) {
+    int p1; // выбор
     printf("Варианты для заполнения полей\n1) Производитель - любое название\n2)Тип клавиш - 1)membran/2)mechanic\n3)Интерфейс подключения - usb/PS/2/COM\n4)Количество клавиш - целое число\n5)Цвет - любой цвет на английском языке\n");
 
     for (int i = 0; i < size; i++) {
-        int valid_input = 0;//корректность ввода
+        int valid_input = 0; // корректность ввода
 
         while (!valid_input) {
             printf("Введите данные о клавиатуре в порядке: производитель, тип клавиш, интерфейс подключения, количество клавиш, цвет\n");
-            int result = scanf("%15s %i %9s %f %15s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
+            int result = scanf("%14s %i %4s %f %14s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
 
             if (result == 5 && (massiv[i].tk == 1 || massiv[i].tk == 2)) {
                 valid_input = 1;
@@ -138,22 +154,24 @@ fill_array(kv_t* massiv, int size) {
             }
             else {
                 printf("Некорректные данные. Пожалуйста, попробуйте еще раз.\n");
-                while (getchar() != '\n');
+                while (getchar() != '\n'); // очистка буфера ввода
             }
         }
     }
     return size;
 }
-//печать массива
-print_array(kv_t* massiv, int size) {
+
+// печать массива
+int print_array(kv_t* massiv, int size) {
     for (int i = 0; i < size; i++) {
         printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
     }
     return size;
 }
-//запись в файл
-input_file(char* fname, kv_t* massiv, int size) {
-    FILE* out = fopen(fname, "wt");//файл, куда будет записан массив
+
+// запись в файл
+int input_file(char* fname, kv_t* massiv, int size) {
+    FILE* out = fopen(fname, "wt"); // файл, куда будет записан массив
     if (!out) {
         printf("Ошибка открытия файла\n");
         return 1;
@@ -165,36 +183,40 @@ input_file(char* fname, kv_t* massiv, int size) {
     fclose(out);
     return size;
 }
-//чтение из файла
-output_file(char* fname, kv_t* massiv, int size) {
-    FILE* in = fopen(fname, "rt");//файл откуда считывается массив
+
+// чтение из файла
+int output_file(char* fname, kv_t* massiv, int size) {
+    FILE* in = fopen(fname, "rt"); // файл откуда считывается массив
     if (!in) {
         printf("Ошибка открытия файла\n");
         return 1;
     }
-    int count = 0;//количество считанных структур
-    while (fscanf(in, "Производитель: %s Тип клавиш: %i Интерфейс подключения: %s Количество клавиш: %f Цвет: %s\n",
-        &massiv[count].pr, &massiv[count].tk, &massiv[count].ip, &massiv[count].kk, &massiv[count].co) == 5) {
+    int count = 0; // количество считанных структур
+    while (count < size && fscanf(in, "Производитель: %14s Тип клавиш: %i Интерфейс подключения: %4s Количество клавиш: %f Цвет: %14s\n",
+        massiv[count].pr, &massiv[count].tk, massiv[count].ip, &massiv[count].kk, massiv[count].co) == 5) {
         count++;
-        if (count >= size) break;
+    }
+    if (count < size) {
+        printf("В файле не хватает данных для считывания всех структур\n");
     }
     fclose(in);
     return count;
 }
-//поиск элемента
-find_element(kv_t* massiv, int size) {
+
+// поиск элемента
+int find_element(kv_t* massiv, int size) {
     char s[15], s1[15]; // Для введения данных
     int p, k; // p для выбора поля, k для количества искомых полей
 
     printf("Введите количество полей для поиска\n");
-    scanf("%i", &k);
+    k = get_valid_input(1, 2);
     if (k == 1) {
         printf("Введите поле для поиска (1-цвет, 2-производитель)\n");
-        scanf("%i", &p);
+        p = get_valid_input(1, 2);
 
         if (p == 1) {
             printf("Введите цвет\n");
-            scanf("%s", s);
+            scanf("%14s", s);
             printf("Выбран цвет %s\n", s);
 
             for (int i = 0; i < size; i++) {
@@ -205,7 +227,7 @@ find_element(kv_t* massiv, int size) {
         }
         else if (p == 2) {
             printf("Введите производителя\n");
-            scanf("%s", s);
+            scanf("%14s", s);
 
             for (int i = 0; i < size; i++) {
                 if (strcmp(massiv[i].pr, s) == 0)
@@ -217,22 +239,25 @@ find_element(kv_t* massiv, int size) {
     else if (k == 2) {
         printf("Выбран поиск по обоим полям\n");
         printf("Введите искомый цвет\n");
-        scanf("%s", &s);
+        scanf("%14s", s);
         printf("Введите искомого производителя\n");
-        scanf("%s", &s1);
+        scanf("%14s", s1);
         for (int i = 0; i < size; i++) {
-            if ((strcmp(massiv[i].co, s) == 0) && (strcmp(massiv[i].pr, s1) == 0)) printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
+            if ((strcmp(massiv[i].co, s) == 0) && (strcmp(massiv[i].pr, s1) == 0))
+                printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n",
+                    massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
         }
     }
     return size;
 }
-//сортировка массива
-sort_massiv(kv_t* massiv, int size) {
-    int p, p1;//для выбора пользователя
+
+// сортировка массива
+int sort_massiv(kv_t* massiv, int size) {
+    int p, p1; // для выбора пользователя
     printf("Введите критерий для сортировки (1-производитель, 2-тип клавиш, 3-интерфейс подключения, 4-количество клавиш, 5-цвет)\n");
-    scanf("%i", &p);
+    p = get_valid_input(1, 5);
     printf("Выберите тип сортировки (1-по возрастанию, 2-по убыванию)\n");
-    scanf("%i", &p1);
+    p1 = get_valid_input(1, 2);
 
     for (int i = 0; i < size - 1; i++) {
         for (int j = 0; j < size - i - 1; j++) {
@@ -260,48 +285,84 @@ sort_massiv(kv_t* massiv, int size) {
     }
     return size;
 }
-//добавление произвольного количества элементов
-add_elem(kv_t* massiv, int size) {
-    int p, p1 = 0;//для выбора пользователя
-    kv_t* massiv32;//измененный массив
+
+// добавление произвольного количества элементов
+int add_elem(kv_t* massiv, int size) {
+    int p, p1 = 0; // для выбора пользователя
+    kv_t* massiv32; // измененный массив
     printf("Введите количество элементов, которое хотите добавить:\n");
-    scanf("%i", &p);
+    p = get_valid_input(1, 100); // ограничим количество добавляемых элементов до 100
     if (massiv == NULL) {
-        printf("Oshibka");
+        printf("Ошибка");
         return 0;
     }
     massiv32 = massiv;
     massiv32 = realloc(massiv, (size + p) * sizeof(kv_t));
+    if (massiv32 == NULL) {
+        printf("Ошибка выделения памяти\n");
+        return size;
+    }
+    massiv = massiv32;
     printf("Варианты для заполнения полей\n1) Производитель - любое название\n2)Тип клавиш - 1)membran/2)mechanic\n3)Интерфейс подключения - usb/PS/2/COM\n4)Количество клавиш - целое число\n5)Цвет - любой цвет на английском языке\n");
     for (int i = size; i < size + p; i++) {
         printf("Введите данные о клавиатуре на английском языке в порядке: производитель, тип клавиш, интерфейс подключения, количество клавиш, цвет\n");
-        scanf("%15s %i %9s %f %15s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
+        int result = scanf("%14s %i %4s %f %14s", massiv[i].pr, &massiv[i].tk, massiv[i].ip, &massiv[i].kk, massiv[i].co);
+        if (result != 5 || (massiv[i].tk != 1 && massiv[i].tk != 2)) {
+            printf("Некорректные данные. Пожалуйста, попробуйте еще раз.\n");
+            while (getchar() != '\n'); // очистка буфера ввода
+            i--;
+            continue;
+        }
         printf("Производитель: %s, Тип клавиш: %i, Интерфейс подключения: %s, Количество клавиш: %f, Цвет: %s\n", massiv[i].pr, massiv[i].tk, massiv[i].ip, massiv[i].kk, massiv[i].co);
         printf("Если данные введены некорректно введите 1 и попробуйте еще раз, иначе введите 0\n");
-        scanf("%i", &p1);
+        p1 = get_valid_input(0, 1);
         if (p1 == 1) i--;
     }
-    massiv = massiv32;
     return (size + p);
 }
-//изменение элемента
-edit_elem(kv_t* massiv, int size) {
-    int p, p1;//для выбора пользователя
+
+// изменение элемента
+int edit_elem(kv_t* massiv, int size) {
+    int p, p1; // для выбора пользователя
     printf("Введите индекс элемента, который нужно отредактировать\n");
-    scanf("%i", &p);
-    printf("Введите какой парамерт нужно отредактировать(1-производитель, 2-тип клавиш, 3-тип подключение, 4-количества клавиш, 5-цвет)\n");
-    scanf("%i", &p1);
+    p = get_valid_input(0, size - 1);
+    printf("Введите какой параметр нужно отредактировать(1-производитель, 2-тип клавиш, 3-тип подключения, 4-количество клавиш, 5-цвет)\n");
+    p1 = get_valid_input(1, 5);
     printf("Введите значение которое нужно вставить в этот параметр\n");
-    switch (p1)
-    {
-    case 1: scanf("%s", &massiv[p].pr); break;
-    case 2: scanf("%i", &massiv[p].tk); break;
-    case 3: scanf("%s", &massiv[p].ip); break;
+    switch (p1) {
+    case 1: scanf("%14s", massiv[p].pr); break;
+    case 2: massiv[p].tk = get_valid_input(1, 2); break;
+    case 3: scanf("%4s", massiv[p].ip); break;
     case 4: scanf("%f", &massiv[p].kk); break;
-    case 5: scanf("%s", &massiv[p].co); break;
+    case 5: scanf("%14s", massiv[p].co); break;
     default:
         printf("Введен неверный тип данных\n");
         break;
     }
     return size;
+}
+// функция для проверки корректности ввода числа
+get_valid_input(int min, int max) {
+    int input;
+    char buffer[256];
+    while (1) {
+        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+            if (sscanf(buffer, "%d", &input) == 1 && input >= min && input <= max) {
+                return input;
+            }
+            else {
+                printf("Некорректный ввод. Пожалуйста, введите число от %d до %d: ", min, max);
+            }
+        }
+    }
+}
+
+// функция для проверки существования файла
+file_have(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (file) {
+        fclose(file);
+        return 1;
+    }
+    return 0;
 }
